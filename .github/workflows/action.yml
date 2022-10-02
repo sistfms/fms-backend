@@ -21,7 +21,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - run:
-        pm2 stop "fms-backend" 
-        npm install
-        pm2 start "fms-backend"
+      - run: pm2 stop "fms-backend"
+      - run: npm install
+      - run: pm2 start "fms-backend"
