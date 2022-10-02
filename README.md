@@ -6,7 +6,7 @@ The Backend Server is built using Node.js.
 
 ## Software Requirements
 You need 
-[Node.js](https://linktodocumentation) installed on your system to run the server.
+[Node.js](https://nodejs.org/en/) installed on your system to run the server.
 
 
 
