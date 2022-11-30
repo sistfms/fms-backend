@@ -6,6 +6,7 @@ const app = express();
 
 // routes import
 import authRoutes from "./routes/authRoutes.js";
+import batchesRoutes from "./routes/batchesRoutes.js";
 
 // import middlewares
 import databaseConfig from "./config/db.js";
@@ -26,6 +27,7 @@ app.use(cors(corsOptions));
 
 // ROUTES
 app.use("/", databaseConfig, authRoutes);
+app.use("/batches", databaseConfig, batchesRoutes);
 
 app.get("/", (req, res) => res.send(`BACKEND SERVER IS RUNNING`));
 
