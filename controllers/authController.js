@@ -10,12 +10,12 @@ export const loginController = async (req, res) => {
   try{
     let [userInfo] = await conn.query(`SELECT * FROM users WHERE email = ?`, [email]);
     if(userInfo.length === 0){
-      return res.status(401).send("Invalid Credentials");
+      return res.status(401).json({message: "Invalid Credentials"});
     }else{
       userInfo = userInfo[0];
       const isMatch = await bcrypt.compare(password, userInfo.password);
       if(!isMatch){
-        return res.status(401).send("Invalid Credentials");
+        return res.status(401).json({message: "Invalid Credentials"});
       }else{
         const token = generateToken(userInfo.email);
         res.cookie('token', token, { httpOnly: true, maxAge: 15 * 24 * 60 * 60 * 1000});
@@ -51,10 +51,10 @@ export const refreshController = async (req, res) => {
         role: userInfo.role,
      });
     }else{
-      res.status(401).send("Invalid Credentials");
+      res.status(401).json({message: "Invalid Credentials"});
     }
   }else{
-    res.status(401).send("Invalid Credentials");
+    res.status(401).json({message: "Invalid Credentials"});
   }
 }
 

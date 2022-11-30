@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //ORIGIN CONFIG
 const corsOptions = {
-  origin: ["http://localhost:4000", "https://sistfms.me"],
+  origin: ["http://localhost:4000", "https://sistfms.me", "http://localhost:3000"],
   credentials: true,
 };
 
