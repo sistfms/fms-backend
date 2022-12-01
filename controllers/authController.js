@@ -18,7 +18,7 @@ export const loginController = async (req, res) => {
         return res.status(401).json({message: "Invalid Credentials"});
       }else{
         const token = generateToken(userInfo.email);
-        res.cookie('token', token, { httpOnly: true, maxAge: 15 * 24 * 60 * 60 * 1000, sameSite: "none"});
+        res.cookie('token', token, { httpOnly: true, maxAge: 15 * 24 * 60 * 60 * 1000, sameSite: "none", secure: true });
         return res.status(200).send({
           email: userInfo.email,
           name: userInfo.name,
