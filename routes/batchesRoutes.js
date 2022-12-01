@@ -5,7 +5,8 @@ import {
   createBatch,
   getBatchById,
   activateBatch,
-  getStudentsByBatchId
+  getStudentsByBatchId,
+  getFeesByBatchId
 } from '../controllers/batchesController.js';
 const router = express.Router();
 
@@ -18,5 +19,8 @@ router.put('/:id/activate', protect, admin, activateBatch);
 
 // student batch integrations
 router.get('/:id/students', protect, admin, getStudentsByBatchId);
+
+// Batch and Fees Integrations
+router.get('/:id/fees', protect, admin, getFeesByBatchId);
 
 export default router;

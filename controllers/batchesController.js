@@ -83,3 +83,16 @@ export const getStudentsByBatchId = async (req, res) => {
         console.log(err);
     }
 }
+
+// Batch Fees Integrations
+export const getFeesByBatchId = async (req, res) => {
+    const conn = req.mysql.promise();
+    const batchId = req.params.id;
+    try {
+        let [fees] = await conn.query(`SELECT * FROM fees WHERE batchId = ?`, [batchId]);
+        res.json(fees);
+    }catch(err){
+        res.status(500).send("Server Error");
+        console.log(err);
+    }
+}
