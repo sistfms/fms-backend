@@ -70,3 +70,16 @@ export const activateBatch = async (req, res) => {
         console.log(err);
     }
 }
+
+// student Batch Integrations
+export const getStudentsByBatchId = async (req, res) => {
+    const conn = req.mysql.promise();
+    const batchId = req.params.id;
+    try {
+        let [students] = await conn.query(`SELECT * FROM students WHERE batchId = ?`, [batchId]);
+        res.json(students);
+    }catch(err){
+        res.status(500).send("Server Error");
+        console.log(err);
+    }
+}
