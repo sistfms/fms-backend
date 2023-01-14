@@ -23,6 +23,19 @@ export const createDepartment = async (req, res) => {
 
   const conn = req.mysql.promise();
   try {
+
+    // Check if department already exists
+    let [department] = await conn.query(
+      `SELECT * FROM departments WHERE name = ?`,
+      [name]
+    );
+    if (department.length > 0) {
+      return res.status(400).json({ 
+        status: 400,
+        message: "Department already exists." 
+      });
+    }
+
     let [result] = await conn.query(
       `INSERT INTO departments (name) VALUES (?)`,
       [name]
