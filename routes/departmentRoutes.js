@@ -8,8 +8,8 @@ import {
 
 const router = express.Router();
 
-router.get('/', getAllDepartments);
-router.post('/', createDepartment);
-router.get('/:id', getDepartmentById);
+router.get('/', protect, admin, getAllDepartments);
+router.post('/', protect, admin, createDepartment);
+router.get('/:id', protect, admin, getDepartmentById);
 
 export default router;
