@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import moment from "moment";
 import bcrypt from "bcryptjs";
-import generateToken from "../utils/generateToken.js";
+import {generateToken, getCustomJwtToken, verifyAndDecodeToken} from "../utils/generateToken.js";
 import sendEmail from "../config/mail.js";
 
 
@@ -71,16 +71,22 @@ export const registerUserController = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     let [newUser] = await conn.query(`INSERT INTO users (name, email, \`password\`, \`role\`) VALUES (?, ?, ?, ?)`, [name, email, hashedPassword, role]);
-    await sendEmail({
+    
+    let emailVerificationToken = getCustomJwtToken({
+      id: newUser.insertId,
+      type: "emailVerification",
+    }, "1d");
+
+    sendEmail({
       to: email,
       subject: "Please verify your email",
       content: `
       <h1>SIST FMS</h1>
       <h4>Hi ${name}</h4>
       <p>Thank you for registering with us. Please click on the link below to verify your email.</p>
-      <a href="https://bijaysharma.github.io">Verify Email</a>
+      <a href="${process.env.BACKEND_URL}/verifyAccount?token=${emailVerificationToken}">Verify Email</a>
       <p>Regards,</p>
-      <p>Team SISTFMS</p>
+      <p>Team SIST FMS</p>
       `
     })
     return res.status(201).json({
@@ -95,5 +101,65 @@ export const registerUserController = async (req, res) => {
   } catch(err){
     console.log(err);
     return res.status(500).json({message: "Internal Server error"});
+  }
+};
+
+// @PATH: /verifyAccount?token=:token
+// @METHOD: GET
+// @DESC: Verify user account
+export const verifyAccountController = async (req, res) => {
+  const {token} = req.query;
+  try {
+    const decodedToken = await verifyAndDecodeToken(token);
+    console.log("decoded token", decodedToken);
+    if(decodedToken){
+      if(decodedToken.type === "emailVerification"){
+        let conn = req.mysql.promise();
+        try{
+          let [user] = await conn.query(`SELECT * FROM users WHERE id = ?`, [decodedToken.id]);
+          if(user.length > 0){
+            user = user[0];
+            if(user.email_verified === 1){
+              return res.status(400).json({
+                status: 400,
+                message: "User already verified"
+              });
+            }else{
+              await conn.query(`UPDATE users SET email_verified = 1, status='ACTIVE' WHERE id = ?`, [decodedToken.id]);
+              return res.status(200).json({
+                status: 200,
+                message: "User verified successfully"
+              });
+            }
+          }else{
+            return res.status(400).json({
+              status: 400,
+              message: "Invalid token"
+            });
+          }
+        }catch(err){
+          console.log(err);
+          return res.status(500).json({
+            status: 500,
+            message: "Internal Server error"
+          });
+        }
+      }else{
+        return res.status(400).json({
+          status: 400,
+          message: "Invalid token"});
+      }
+    }else{
+      return res.status(400).json({
+        status: 400,
+        message: "Invalid token"
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      status: 500,
+      message: "Internal Server error"
+    });
   }
 }
