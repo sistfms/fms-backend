@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import moment from "moment";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
+import sendEmail from "../config/mail.js";
 
 
 export const loginController = async (req, res) => {
@@ -70,6 +71,18 @@ export const registerUserController = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     let [newUser] = await conn.query(`INSERT INTO users (name, email, \`password\`, \`role\`) VALUES (?, ?, ?, ?)`, [name, email, hashedPassword, role]);
+    await sendEmail({
+      to: email,
+      subject: "Please verify your email",
+      content: `
+      <h1>SIST FMS</h1>
+      <h4>Hi ${name}</h4>
+      <p>Thank you for registering with us. Please click on the link below to verify your email.</p>
+      <a href="https://bijaysharma.github.io">Verify Email</a>
+      <p>Regards,</p>
+      <p>Team SISTFMS</p>
+      `
+    })
     return res.status(201).json({
       user: {
         id: newUser.insertId,
