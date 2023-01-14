@@ -69,8 +69,16 @@ export const registerUserController = async (req, res) => {
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    let [newUser] = await conn.query(`INSERT INTO users (name, email, password, \`role\`) VALUES (?, ?, ?, ?)`, [name, email, hashedPassword, role]);
-    return res.status(201).json({message: "User created successfully"});
+    let [newUser] = await conn.query(`INSERT INTO users (name, email, \`password\`, \`role\`) VALUES (?, ?, ?, ?)`, [name, email, hashedPassword, role]);
+    return res.status(201).json({
+      user: {
+        id: newUser.insertId,
+        name: name,
+        email: email,
+        role: role
+      },
+      message: "User created successfully"
+    });
   } catch(err){
     console.log(err);
     return res.status(500).json({message: "Internal Server error"});
