@@ -7,9 +7,9 @@ import {
 } from '../controllers/studentController.js';
 const router = express.Router();
 
-router.get("/", protect, admin, getAllStudents);
-router.get("/:id", protect, admin, getStudentById);
-router.post("/", protect, admin, addStudent);
+router.get("/", getAllStudents);
+router.get("/:id", getStudentById);
+router.post("/", addStudent);
 // router.put("/:id", protect, admin, updateStudent);
 // router.delete("/:id", protect, admin, deleteStudent);
 
