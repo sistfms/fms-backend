@@ -102,7 +102,7 @@ export const getStudentsByBatchId = async (req, res) => {
     const conn = req.mysql.promise();
     const batchId = req.params.id;
     try {
-        let [students] = await conn.query(`SELECT * FROM students WHERE batchId = ?`, [batchId]);
+        let [students] = await conn.query(`SELECT u.name, u.email, s.* FROM students s INNER JOIN users u ON u.id = s.user_id WHERE s.batch_id = ?;`, [batchId]);
         res.json(students);
     }catch(err){
         res.status(500).send("Server Error");
