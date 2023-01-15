@@ -16,7 +16,13 @@ export const getAllDepartments = async (req, res) => {
 // @METHOD  POST
 // @DESC    Create a new department
 export const createDepartment = async (req, res) => {
-  const { name } = req.body;
+  const { name, code } = req.body;
+  if (!code) {
+    return res.status(400).json({ message: "Department Code is required." });
+  }
+  if(code.length !== 4){
+    return res.status(400).json({ message: "Department Code must be 4 characters long." });
+  }
   if (!name) {
     return res.status(400).json({ message: "Department Name is required." });
   }
@@ -26,19 +32,19 @@ export const createDepartment = async (req, res) => {
 
     // Check if department already exists
     let [department] = await conn.query(
-      `SELECT * FROM departments WHERE name = ?`,
-      [name]
+      `SELECT * FROM departments WHERE name = ? OR code = ?`,
+      [name, code]
     );
     if (department.length > 0) {
       return res.status(400).json({ 
         status: 400,
-        message: "Department already exists." 
+        message: "Department with same name or code already exists." 
       });
     }
 
     let [result] = await conn.query(
-      `INSERT INTO departments (name) VALUES (?)`,
-      [name]
+      `INSERT INTO departments (name, code) VALUES (?, ?)`,
+      [name, code]
     );
     let insertId = result.insertId;
     res.status(201).json({
