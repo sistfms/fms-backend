@@ -19,6 +19,33 @@ export const addFees = async(req, res) => {
   }
 }
 
+export const getFeeDetails = async(req, res) => {
+  const conn = req.mysql.promise();
+  const feeId = req.params.id;
+  try {
+    let [feeDetails] = await conn.query(
+      `SELECT d.name as department_name, t.* FROM 
+      (SELECT bf.*, b.name as batch_name, b.department_id FROM batch_fees bf INNER JOIN batches b ON bf.batch_id = b.id WHERE bf.id = ?) t 
+      INNER JOIN departments d ON t.department_id = d.id;`
+      , [feeId]);
+    if (feeDetails.length == 0) {
+      res.status(404).json({
+        status: 404,
+        message: "Fee not found"
+      });
+      return;
+    }
+    res.json(feeDetails[0]);
+  } catch (err) {
+    res.status(500).send("Server Error");
+    console.log(err);
+  }
+}
+
+// @PATH /fees/:id/report
+// @desc Get fee report
+// @access Private
+// @method GET
 export const getFeeReport = async(req, res) => {
   const fee_id = req.params.id;
   const conn = req.mysql.promise();
