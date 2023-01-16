@@ -34,7 +34,9 @@ export const getStudentById = async (req, res) => {
     console.log(err);
   }
 };
-
+// @PATH /api/students
+// @METHOD POST
+// @DESC Create a new student
 export const addStudent = async (req, res) => {
   let conn;
   try {

@@ -115,8 +115,51 @@ export const getFeesByBatchId = async (req, res) => {
     const conn = req.mysql.promise();
     const batchId = req.params.id;
     try {
-        let [fees] = await conn.query(`SELECT * FROM fees WHERE batchId = ?`, [batchId]);
+        let [fees] = await conn.query(`SELECT * FROM batch_fees WHERE batch_id = ?`, [batchId]);
         res.json(fees);
+    }catch(err){
+        res.status(500).send("Server Error");
+        console.log(err);
+    }
+}
+
+// @PATH /api/batches/:id/fees
+// @desc Add new batch fees
+// @access Private
+// @method POST
+export const createBatchFee = async (req, res) => {
+    const conn = req.mysql.promise();
+    const batchId = req.params.id;
+    const { name, amount, due_date } = req.body;
+    try {
+        let [batch] = await conn.query(`SELECT * FROM batches WHERE id = ?`, [batchId]);
+        if(batch.length > 0 && batch[0].status == "ACTIVE"){
+            let [result] = await conn.query(`INSERT INTO batch_fees (name, amount, due_date, batch_id) VALUES (?, ?, ?, ?)`, [name, amount, due_date, batchId]);
+            let insertId = result.insertId;
+            res.status(201).json({
+                status: 201,
+                message: "Batch fee created successfully",
+                batch_fee: {
+                    id: insertId,
+                    name: name,
+                    amount: amount,
+                    due_date: due_date,
+                    batch_id: batchId
+                }
+            });
+        }else{
+            if (batch.length == 0) {
+                res.status(404).json({
+                    status: 404,
+                    message: "Batch not found"
+                });
+            }else{
+                res.status(400).json({
+                    status: 400,
+                    message: "Batch is not active"
+                });
+            }
+        }
     }catch(err){
         res.status(500).send("Server Error");
         console.log(err);
