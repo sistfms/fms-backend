@@ -14,6 +14,12 @@ export const loginController = async (req, res) => {
       return res.status(401).json({message: "Invalid Credentials"});
     }else{
       userInfo = userInfo[0];
+      if (userInfo.status  !== 'ACTIVE'){
+        return res.status(401).json({
+          status: 401,
+          message: "Your account is not active."
+        });
+      }
       const isMatch = await bcrypt.compare(password, userInfo.password);
       if(!isMatch){
         return res.status(401).json({message: "Invalid Credentials"});
