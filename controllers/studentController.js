@@ -1,5 +1,6 @@
 import sendEmail from '../config/mail.js';
-import { getCustomJwtToken } from '../utils/generateToken.js';
+import { getCustomJwtToken, verifyAndDecodeToken } from '../utils/generateToken.js';
+import { hashPassword } from '../utils/passwordUtils.js';
 
 export const getAllStudents = async (req, res) => {
   const conn = req.mysql.promise();
@@ -22,7 +23,7 @@ export const getAllStudents = async (req, res) => {
 export const getStudentById = async (req, res) => {
   const conn = req.mysql.promise();
   try {
-    let [student] = await conn.query(`SELECT * FROM students WHERE studentId = ?`, [req.params.id]);
+    let [student] = await conn.query(`SELECT * FROM students WHERE id = ?`, [req.params.id]);
     if(student.length === 0) {
       res.status(404).send("Student not found");
     } else {
@@ -77,10 +78,13 @@ export const addStudent = async (req, res) => {
     // Send email
     const token = getCustomJwtToken({ user_id, student_id, role: 'STUDENT' }, '24h');
 
-    const url = `${process.env.CLIENT_URL}/students/activate?token=${token}`;
+    const url = `${process.env.CLIENT_URL}/activate?token=${token}`;
     const message = `
-      <h1>Please Complete Your Account Activation</h1>
-      <p>Click the link below to activate your account</p>
+      <h1>SIST FMS</h1>
+      <h3>Please Complete Your Account Activation</h3>
+      <p>Hi ${name},</p>
+      <p>Welcone to SIST, your new roll number is ${roll_number}.</p>
+      <p>Click <a href="${url}" target="_blank">here</a> or the link giveb below to activate your account.</p>
       <a href="${url}" target="_blank">${url}</a>
     `;
     sendEmail({
@@ -101,3 +105,142 @@ export const addStudent = async (req, res) => {
     console.log(err);
   }
 };
+
+// @PATH /api/students/getStudentByToken?token=token
+export const getStudentByToken = async (req, res) => {
+  let conn;
+  const token = req.query.token;
+  
+  if(!token) {
+    return res.status(400).send({
+      status: "400",
+      message: "Invalid token"
+    });
+  }
+
+  try {
+    conn = await req.mysql.promise().getConnection();
+    let decoded;
+    
+    try {
+      decoded = await verifyAndDecodeToken(token);
+    } catch (err) {
+      console.log("err", err)
+      return res.status(400).send({
+        status: "400",
+        message: "Invalid token"
+      });
+    }
+
+    if(decoded.role !== 'STUDENT' || !decoded.user_id || !decoded.student_id) {
+      res.status(400).json({
+        status: "400",
+        message: "Invalid token"
+      });
+      res.end();
+      return
+    }
+    req.params.id = decoded.student_id;
+
+    const { user_id, student_id, role } = decoded;
+
+    const query = `
+      SELECT s.id, u.id as user_id, u.name, u.email, s.roll_number, s.batch_id, b.name as batch_name, s.phone_number, s.gender, s.status
+      FROM students s
+      INNER JOIN batches b ON b.id = s.batch_id
+      INNER JOIN users u ON s.user_id = u.id
+      WHERE u.role = 'STUDENT' AND u.id = ? AND s.id = ?;
+    `;
+
+    let [student] = await conn.query(query, [user_id, student_id]);
+    
+    if(student.length === 0) {
+      return res.status(404).send({
+        status: "404",
+        message: "Student not found"
+      });
+    }
+
+    student = student[0];
+    res.json(student);
+    
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      status: "500",
+      message: "Server Error"
+    });
+  }finally {
+    conn.release();
+  }
+
+}
+
+export const activateStudent = async (req, res) => {
+  let conn;
+  const { password, token } = req.body;
+  if(!token) {
+    return res.status(400).send({
+      status: "400",
+      message: "Invalid token"
+    });
+  }
+  if (!password) {
+    return res.status(400).send({
+      status: "400",
+      message: "Password is required"
+    });
+  }
+  try {
+    conn = await req.mysql.promise().getConnection();
+    let decoded;
+    try {
+      decoded = await verifyAndDecodeToken(token);
+    } catch (err) {
+      return res.status(400).send({
+        status: "400",
+        message: "Invalid token"
+      });
+    }
+
+    if(decoded.role !== 'STUDENT' || !decoded.user_id || !decoded.student_id) {
+      return res.status(400).send({
+        status: "400",
+        message: "Invalid token"
+      });
+    }
+
+    const { user_id, student_id, role } = decoded;
+    // check if student exists and if it is in invited status
+    const [student] = await conn.query(`SELECT * FROM students WHERE id = ? AND status = ?`, [student_id, 'INVITED']);
+    if(student.length === 0) {
+      return res.status(400).send({
+        status: "400",
+        message: "Invalid token"
+      });
+    }
+
+    await conn.beginTransaction();
+    const hashedPassword = await hashPassword(password);
+    await conn.query(`UPDATE users SET password = ?, status = ?, email_verified = ? WHERE id = ?`, [hashedPassword, 'ACTIVE' , '1', user_id]);
+    await conn.query(`UPDATE students SET status = ? WHERE id = ?`, ['ACTIVE', student_id]);
+    await conn.commit();
+    res.json({
+      status: "200",
+      message: "Student activated successfully"
+    });
+  
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      status: "500",
+      message: "Server Error"
+    });
+  }finally {
+    conn.release();
+  }
+
+}
+
+
+
