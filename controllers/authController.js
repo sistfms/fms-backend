@@ -27,6 +27,7 @@ export const loginController = async (req, res) => {
         const token = generateToken(userInfo.email);
         res.cookie('token', token, { httpOnly: true, maxAge: 15 * 24 * 60 * 60 * 1000, sameSite: "none", secure: true });
         return res.status(200).send({
+          user_id: userInfo.id,
           email: userInfo.email,
           name: userInfo.name,
           role: userInfo.role,
@@ -52,7 +53,14 @@ export const refreshController = async (req, res) => {
     let [userInfo] = await req.mysql.promise().query(`SELECT * FROM users WHERE email = ?`, [req.user.email]);
     if (userInfo.length > 0){
      userInfo = userInfo[0];
+     if (userInfo.status  !== 'ACTIVE'){
+       return res.status(401).json({
+         status: 401,
+         message: "Your account is not active."
+       });
+     }
      res.json({
+        user_id: userInfo.id,
         email: userInfo.email,
         name: userInfo.name,
         role: userInfo.role,

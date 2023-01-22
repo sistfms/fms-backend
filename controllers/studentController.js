@@ -35,6 +35,38 @@ export const getStudentById = async (req, res) => {
     console.log(err);
   }
 };
+
+export const getStudentByUserId = async (req, res) => {
+  const conn = req.mysql.promise();
+  const { user_id } = req.body;
+  try {
+    const query = `
+    SELECT s.id, u.id as user_id, u.name, u.email, s.roll_number, s.batch_id, b.name as batch_name, s.phone_number, s.gender, s.status, b.department_id
+    FROM students s
+    INNER JOIN batches b ON b.id = s.batch_id
+    INNER JOIN users u ON s.user_id = u.id
+    WHERE u.role = 'STUDENT' AND u.id = ?;
+  `;
+    let [student] = await conn.query(query, [user_id]);
+    if(student.length === 0) {
+      return res.status(404).send({
+        status: 404,
+        message: "Student not found"
+      });
+    }
+    student = student[0];
+    const [departmentName] = await conn.query(`SELECT name FROM departments WHERE id = ?`, [student.department_id]);
+    student.department_name = departmentName[0].name;
+    res.json(student);
+  } catch (err) {
+    res.status(500).send({
+      status: 500,
+      message: "Server Error"
+    });
+    console.log(err);
+  }
+};
+
 // @PATH /api/students
 // @METHOD POST
 // @DESC Create a new student

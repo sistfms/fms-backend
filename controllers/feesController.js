@@ -83,3 +83,24 @@ export const getFeeReport = async(req, res) => {
     console.log(err);
   }
 }
+
+export const getStudentFeeReport = async(req, res) => {
+  const student_id = req.params.id;
+  const conn = req.mysql.promise();
+  try {
+    let [student] = await conn.query(`SELECT id, batch_id FROM students WHERE id = ?;`, [student_id]);
+    if (student.length == 0) {
+      res.status(404).json({
+        status: 404,
+        message: "Student not found"
+      });
+      return;
+    }
+    let batch_id = student[0].batch_id;
+    let [studentFees] = await conn.query(`SELECT bf.*, fp.status as payment_status, fp.payment_date, fp.payment_method, fp.collected_by FROM batch_fees bf LEFT JOIN fee_payments fp ON bf.id = fp.batch_fee_id AND fp.student_id = ? WHERE bf.batch_id = ?;`, [student_id, batch_id]);
+    res.json(studentFees);
+  } catch (err) {
+    res.status(500).send("Server Error");
+    console.log(err);
+  }
+}

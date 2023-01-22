@@ -5,12 +5,14 @@ import {
   getAllStudents,
   getStudentById,
   getStudentByToken,
-  activateStudent
+  activateStudent,
+  getStudentByUserId
 } from '../controllers/studentController.js';
 const router = express.Router();
 
 router.get("/", getAllStudents);
 router.get("/getStudentByToken", getStudentByToken);
+router.post("/getStudentByUserId", getStudentByUserId)
 router.post("/activateStudent", activateStudent)
 router.get("/:id", getStudentById);
 router.post("/", addStudent);
