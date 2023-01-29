@@ -114,7 +114,19 @@ export const updateStatusHook = async (req, res) => {
 
   if (signature === computedSignature) {
     const payment = req.body.payload.payment.entity;
-    console.log(payment);
+    let conn;
+    try {
+      conn = await req.mysql.promise();
+      let acquirer_data = payment.acquirer_data;
+      if(acquirer_data){
+        acquirer_data = JSON.stringify(acquirer_data);
+        await conn.query(`UPDATE fee_payments SET razorpay_payment_id = ?, status = ?, acquirer_data = ?, payment_method = 'online', payment_date = NOW() WHERE razorpay_order_id = ?;`, [payment.id, payment.status, acquirer_data, payment.order_id]);
+      }else{
+        await conn.query(`UPDATE fee_payments SET razorpay_payment_id = ?, status = ?, payment_method = 'online', payment_date = NOW() WHERE razorpay_order_id = ?;`, [payment.id, payment.status, payment.order_id]);
+      }
+    } catch (err) {
+      console.log(err);
+    } 
   } else {
     console.log("Invalid signature");
   }
