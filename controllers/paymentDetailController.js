@@ -1,4 +1,5 @@
 import Razorpay from "razorpay";
+import ctypto from "crypto";
 
 export const getFeePaymentDetails = async(req, res) => {
   const { user_id, batch_fee_id } = req.body;
@@ -101,5 +102,18 @@ export const getOrderId = async (req, res) => {
 };
 
 export const updateStatusHook = async (req, res) => {
-  console.log(req.body);
+  res.status(200).send("OK");
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const signature = req.headers["x-razorpay-signature"];
+  const payload = JSON.stringify(req.body);
+  const hmac = crypto.createHmac("sha256", webhookSecret);
+  hmac.update(payload);
+  const computedSignature = hmac.digest("hex");
+
+  if (signature === computedSignature) {
+    const payment = req.body.payload.payment.entity;
+    console.log(payment);
+  } else {
+    console.log("Invalid signature");
+  }
 }
