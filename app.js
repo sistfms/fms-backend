@@ -30,12 +30,12 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // ROUTES
-app.use("/", databaseConfig, authRoutes);
-app.use("/batches", databaseConfig, batchesRoutes);
-app.use("/students", databaseConfig, studentsRoutes);
-app.use("/fees", databaseConfig, feeRoutes);
-app.use("/departments", databaseConfig, departmentRoutes);
-app.use("/payments", databaseConfig, paymentRoutes);
+app.use("/api/", databaseConfig, authRoutes);
+app.use("/api/batches", databaseConfig, batchesRoutes);
+app.use("/api/students", databaseConfig, studentsRoutes);
+app.use("/api/fees", databaseConfig, feeRoutes);
+app.use("/api/departments", databaseConfig, departmentRoutes);
+app.use("/api/payments", databaseConfig, paymentRoutes);
 
 app.get("/", (req, res) => res.send(`BACKEND SERVER IS RUNNING`));
 
