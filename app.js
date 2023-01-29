@@ -10,6 +10,7 @@ import batchesRoutes from "./routes/batchesRoutes.js";
 import studentsRoutes from "./routes/studentRoutes.js";
 import feeRoutes from "./routes/feesRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 // import middlewares
 import databaseConfig from "./config/db.js";
@@ -26,7 +27,7 @@ const corsOptions = {
 };
 
 //CORS MIDDLEWARE
-app.use(cors(corsOptions));
+app.use(cors());
 
 // ROUTES
 app.use("/", databaseConfig, authRoutes);
@@ -34,6 +35,7 @@ app.use("/batches", databaseConfig, batchesRoutes);
 app.use("/students", databaseConfig, studentsRoutes);
 app.use("/fees", databaseConfig, feeRoutes);
 app.use("/departments", databaseConfig, departmentRoutes);
+app.use("/payments", databaseConfig, paymentRoutes);
 
 app.get("/", (req, res) => res.send(`BACKEND SERVER IS RUNNING`));
 
