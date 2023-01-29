@@ -102,7 +102,9 @@ export const getOrderId = async (req, res) => {
 };
 
 export const updateStatusHook = async (req, res) => {
+  console.log("Request received from Razorpay");
   res.status(200).send("OK");
+  console.log("Response sent to Razorpay");
   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
   const signature = req.headers["x-razorpay-signature"];
   const payload = JSON.stringify(req.body);
