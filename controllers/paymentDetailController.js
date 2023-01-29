@@ -1,5 +1,5 @@
 import Razorpay from "razorpay";
-import ctypto from "crypto";
+import crypto from "crypto";
 
 export const getFeePaymentDetails = async(req, res) => {
   const { user_id, batch_fee_id } = req.body;
