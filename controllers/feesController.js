@@ -59,7 +59,7 @@ export const getFeeReport = async(req, res) => {
       return;
     }
     fees = fees[0];
-    let [feePayments] = await conn.query(`SELECT u.name, p.* FROM (SELECT fp.id as payment_id, fp.status as payment_status, fp.payment_date, fp.payment_method, fp.collected_by , s.id as student_id, s.roll_number, s.user_id  FROM fee_payments fp INNER JOIN students s ON fp.student_id = s.id WHERE batch_fee_id = ? AND fp.status ='paid') as p INNER JOIN users u ON p.user_id = u.id;`, [fee_id]);
+    let [feePayments] = await conn.query(`SELECT u.name, p.* FROM (SELECT fp.id as payment_id, fp.status as payment_status, fp.payment_date, fp.payment_method, fp.collected_by , s.id as student_id, s.roll_number, s.user_id  FROM fee_payments fp INNER JOIN students s ON fp.student_id = s.id WHERE batch_fee_id = ? AND fp.status ='captured') as p INNER JOIN users u ON p.user_id = u.id;`, [fee_id]);
     let [students] = await conn.query(`SELECT u.name, s.* FROM students s LEFT JOIN users u ON u.id = s.user_id WHERE s.batch_id = ?;`, [fees.batch_id]);
     let feeReport = [];
     for (let i = 0, len = students.length; i < len; i++) {

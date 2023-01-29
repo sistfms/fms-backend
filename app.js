@@ -1,6 +1,10 @@
 import express from "express";
 import cors from 'cors';
 import cookieParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -22,7 +26,14 @@ app.use(express.urlencoded({ extended: true }));
 
 //ORIGIN CONFIG
 const corsOptions = {
-  origin: ["http://localhost:4000", "https://sistfms.me", "https://api.sistfms.me", "http://www.sistfms.me" , "http://localhost:3000", "https://goldfish-app-ppmo4.ondigitalocean.app"],
+  origin: [
+    "http://localhost:4000",
+    "http://localhost:3000", 
+    "https://www.sistfms.me" , 
+    "https://sistfms.me", 
+    "https://api.sistfms.me", 
+    "https://cbtutorial.com", 
+    "https://www.cbtutorial.com"],
   credentials: true,
 };
 
@@ -37,6 +48,8 @@ app.use("/api/fees", databaseConfig, feeRoutes);
 app.use("/api/departments", databaseConfig, departmentRoutes);
 app.use("/api/payments", databaseConfig, paymentRoutes);
 
-app.get("/", (req, res) => res.send(`BACKEND SERVER IS RUNNING`));
+app.use(express.static(path.join(__dirname, "build")));
+// app.use(express.static("build"));
+app.get("*", (req, res) => res.sendFile(path.resolve(__dirname, "build", "index.html")));
 
 export default app;
