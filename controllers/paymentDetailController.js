@@ -99,3 +99,7 @@ export const getOrderId = async (req, res) => {
     console.log(err);
   }
 };
+
+export const updateStatusHook = async (req, res) => {
+  console.log(req.body);
+}
