@@ -133,3 +133,29 @@ export const updateStatusHook = async (req, res) => {
     console.log("Invalid signature");
   }
 }
+
+export const getAllPaymentsByOrderId = async (req, res) => {
+  const { order_id } = req.body;
+  if (!order_id) {
+    return res.status(400).send({
+      status: "400",
+      message: "Invalid request"
+    });
+  }
+
+  const razorpayInstance = new Razorpay({
+    key_id: process.env.RAZORPAY_TEST_KEY_ID,
+    key_secret: process.env.RAZORPAY_TEST_KEY_SECRET,
+  });
+
+  try {
+    const payments = await razorpayInstance.orders.fetchPayments(order_id);
+    res.status(200).send(payments);
+  } catch (err) {
+    res.status(500).send({
+      status: "500",
+      message: "Server Error"
+    });
+    console.log(err);
+  }
+}
