@@ -27,7 +27,7 @@ const corsOptions = {
 };
 
 //CORS MIDDLEWARE
-app.use(cors());
+app.use(cors(corsOptions));
 
 // ROUTES
 app.use("/", databaseConfig, authRoutes);
