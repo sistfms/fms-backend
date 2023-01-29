@@ -27,7 +27,7 @@ export const getFeePaymentDetails = async(req, res) => {
     }
     let [feePayment] = await conn.query(`SELECT * FROM fee_payments WHERE batch_fee_id = ? AND student_id = ?;`, [batch_fee_id, student_details[0].id]);
     let hasFeePaymentEntry = feePayment.length > 0 ? true : false;
-    let isPaid = hasFeePaymentEntry && feePayment[0].status == 'PAID' ? true : false;
+    let isPaid = hasFeePaymentEntry && feePayment[0].status == 'captured' ? true : false;
     res.json({
       student_details: student_details[0],
       fee_details: feeDetails[0],
