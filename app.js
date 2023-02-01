@@ -15,6 +15,7 @@ import studentsRoutes from "./routes/studentRoutes.js";
 import feeRoutes from "./routes/feesRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import statsRoutes from "./routes/statsRoutes.js";
 
 // import middlewares
 import databaseConfig from "./config/db.js";
@@ -42,6 +43,7 @@ app.use(cors(corsOptions));
 
 // ROUTES
 app.use("/api/", databaseConfig, authRoutes);
+app.use("/api/stats" , databaseConfig, statsRoutes);
 app.use("/api/batches", databaseConfig, batchesRoutes);
 app.use("/api/students", databaseConfig, studentsRoutes);
 app.use("/api/fees", databaseConfig, feeRoutes);

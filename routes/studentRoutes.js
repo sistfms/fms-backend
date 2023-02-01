@@ -6,16 +6,18 @@ import {
   getStudentById,
   getStudentByToken,
   activateStudent,
-  getStudentByUserId
+  getStudentByUserId,
+  searchStudent
 } from '../controllers/studentController.js';
 const router = express.Router();
 
 router.get("/", getAllStudents);
 router.get("/getStudentByToken", getStudentByToken);
-router.post("/getStudentByUserId", getStudentByUserId)
+router.post("/getStudentByUserId", protect, getStudentByUserId)
 router.post("/activateStudent", activateStudent)
-router.get("/:id", getStudentById);
-router.post("/", addStudent);
+router.get("/:id", protect, getStudentById);
+router.post("/", protect, admin, addStudent);
+router.post("/search", protect, admin, searchStudent)
 // router.put("/:id", protect, admin, updateStudent);
 // router.delete("/:id", protect, admin, deleteStudent);
 

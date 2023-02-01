@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 router.post("/", protect, admin, addFees);
-router.get("/student/:id",  getStudentFeeReport);
+router.get("/student/:id", protect,  getStudentFeeReport);
 router.get("/:id/report", protect, admin, getFeeReport);
 router.get("/:id", protect, admin, getFeeDetails)
 

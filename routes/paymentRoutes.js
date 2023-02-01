@@ -3,13 +3,15 @@ import { protect, admin } from "../middlewares/authMiddleware.js";
 import {
   getAllPaymentsByOrderId,
   getFeePaymentDetails, getOrderId,
-  updateStatusHook
+  updateStatusHook,
+  cashEntry
 } from '../controllers/paymentDetailController.js';
 const router = express.Router();
 
-router.post("/getFeePaymentDetails", getFeePaymentDetails)
-router.post("/getOrderId", getOrderId)
+router.post("/getFeePaymentDetails", protect, getFeePaymentDetails)
+router.post("/getOrderId", protect, getOrderId)
 router.use("/updateStatusHook", updateStatusHook)
-router.post("/getPaymentHistory", getAllPaymentsByOrderId)
+router.post("/getPaymentHistory", protect, getAllPaymentsByOrderId)
+router.post("/cashEntry", protect, admin, cashEntry);
 
 export default router;

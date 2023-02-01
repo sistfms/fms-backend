@@ -1,5 +1,68 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import { v4 as uuidV4 } from "uuid";
+
+export const cashEntry = async (req, res) => {
+  const { student_id, fee_id, collected_by} = req.body;
+  if (!student_id || !fee_id || !collected_by) {
+    return res.status(400).send({
+      status: "400",
+      message: "Invalid request"
+    });
+  }
+
+  let conn;
+  try {
+    conn = await req.mysql.promise();
+    // Find existing fee payment
+    let [feePayment] = await conn.query(`SELECT * FROM fee_payments WHERE batch_fee_id = ? AND student_id = ?;`, [fee_id, student_id]);
+    if (feePayment.length > 0 && feePayment[0].status === 'captured') {
+      return res.status(400).send({
+        status: "400",
+        message: "Fee already paid"
+      });
+    }
+
+    
+
+    
+    if (feePayment.length > 0) {
+      await conn.query(`UPDATE fee_payments SET collected_by = ?, status = ?, payment_method = ? WHERE id = ?;`, [collected_by, 'captured', 'cash' ,feePayment[0].id]);
+      return res.status(200).send({
+        status: "200",
+        message: "Fee payment updated"
+      });
+    }else{
+      let [feeDetails] = await conn.query(`SELECT * FROM batch_fees WHERE id = ?;`, [fee_id]);
+      if (feeDetails.length === 0) {
+        return res.status(404).send({
+          status: "404",
+          message: "Fee not found"
+        });
+      }
+      feeDetails = feeDetails[0];
+      // generate Unique ID
+      // If fee payment does not exist, create it
+      await conn.query(`INSERT INTO fee_payments (batch_fee_id, amount, student_id, collected_by, status, payment_method, razorpay_order_id, razorpay_payment_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`, [fee_id , feeDetails.amount, student_id, collected_by, 'captured', 'cash', "", ""]);
+      return res.status(200).send({
+        status: "200",
+        message: "Fee payment created"
+      });
+    }
+
+    res.send(400, {
+      status: "400",
+      message: "Invalid request"
+    })
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      status: "500",
+      message: "Server Error"
+    });
+  }
+};
 
 export const getFeePaymentDetails = async(req, res) => {
   const { user_id, batch_fee_id } = req.body;

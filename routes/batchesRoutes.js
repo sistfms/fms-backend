@@ -11,16 +11,16 @@ import {
 } from '../controllers/batchesController.js';
 const router = express.Router();
 
-router.get('/',  getAllBatches);
-router.post('/',  createBatch);
-router.get('/:id',  getBatchById);
-router.put('/:id/activate',  activateBatch);
+router.get('/', protect, admin,  getAllBatches);
+router.post('/', protect, admin,  createBatch);
+router.get('/:id', protect, admin,  getBatchById);
+router.put('/:id/activate', protect, admin,  activateBatch);
 // router.put('/:id', protect, admin, updateBatch);
 // router.delete('/:id', protect, admin, deleteBatch);
 
 // Batch Fees Integrations
-router.get('/:id/fees', getFeesByBatchId);
-router.post('/:id/fees',  createBatchFee);
+router.get('/:id/fees', protect, getFeesByBatchId);
+router.post('/:id/fees', protect,  createBatchFee);
 
 // student batch integrations
 router.get('/:id/students', protect, admin, getStudentsByBatchId);
