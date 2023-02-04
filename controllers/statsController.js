@@ -6,8 +6,8 @@ export const getStats = async (req, res) => {
     let [totalDepartments] = await conn.query(`SELECT COUNT(*) AS total_departments FROM departments;`);
     let [totalBatches] = await conn.query(`SELECT COUNT(*) AS total_batches FROM batches;`);
     let [totalPayments] = await conn.query(`SELECT SUM(amount) AS total_payment FROM fee_payments WHERE status = 'captured';`);
-    let [totalCashPayments] = await conn.query(`SELECT SUM(amount) AS total_cash_payment FROM fee_payments WHERE status = 'captured' AND payment_method = 'cash';`);
-    let [totalOnlinePayments] = await conn.query(`SELECT SUM(amount) AS total_online_payment FROM fee_payments WHERE status = 'captured' AND payment_method = 'online';`);
+    let [totalCashPayments] = await conn.query(`SELECT COALESCE (SUM(amount), 0) AS total_cash_payment FROM fee_payments WHERE status = 'captured' AND payment_method = 'cash';`);
+    let [totalOnlinePayments] = await conn.query(`SELECT COALESCE(SUM(amount), 0) AS total_online_payment FROM fee_payments WHERE status = 'captured' AND payment_method = 'online';`);
 
     res.json({
       active_students: activeStudents[0].active_students,
